@@ -9,7 +9,6 @@ header('Content-Type: application/json');
 require __DIR__ . '/vendor/autoload.php';
 require __DIR__ . '/src/Utils/config.php';
 
-// Pistache
 use App\Routing\Router;
 
 $router = new Router();
