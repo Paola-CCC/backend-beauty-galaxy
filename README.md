@@ -1,1 +1,1 @@
-# backend-beauty-galaxy
+# Backend de beauty-galaxy
