@@ -34,6 +34,23 @@ use PDOException;
         $row = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $row;
     }
+
+
+    public function findFourMostPopularProduct() 
+    {
+        $query = "SELECT p.id, p.name, p.descriptionShort, p.descriptionLong, p.thumbnail, p.quantity, p.createdAt, p.price, b.name AS brandName, c.name AS categories 
+        FROM products p
+        LEFT JOIN brands b 
+        ON p.brand_id = b.id
+        LEFT JOIN categories c 
+        ON p.category_id = c.id
+        ORDER BY p.createdAt DESC
+        LIMIT 4";
+        $stmt = $this->_connexionBD->prepare($query);
+        $stmt->execute();
+        $row = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $row;
+    }
     
 
     /**

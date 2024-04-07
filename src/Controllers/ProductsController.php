@@ -51,6 +51,12 @@ class ProductsController
         return json_encode($this->productsManager->findByCategorydId($id));
     }
 
+    public function getPopularProducts()
+    {
+        http_response_code(200);
+        return json_encode($this->productsManager->findFourMostPopularProduct());
+    }
+
     public function newProduct() 
     {
         $data = $this->httpRequest->getBody();
