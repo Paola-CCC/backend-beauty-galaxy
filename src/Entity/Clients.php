@@ -11,7 +11,7 @@ use DateTimeImmutable;
 class Clients
 {
     private int $id;
-    private string $username;
+    private string $pseudo;
     private string $email;
     private ?\DateTimeImmutable $createdAt;
     private $role;
@@ -33,14 +33,14 @@ class Clients
     }
 
 
-    public function getUsername(): ?string {
+    public function getPseudo(): ?string {
 
-        return $this->username;
+        return $this->pseudo;
     }
 
-    public function setUsername(string $username): self 
+    public function setPseudo(string $pseudo): self 
     {
-        $this->username = $username;
+        $this->pseudo = $pseudo;
 
         return $this;
     }

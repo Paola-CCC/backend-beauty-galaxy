@@ -19,12 +19,13 @@ class Routes
         $this->post('/login',['clients' => 'login']);
         $this->get('/clients',['clients' => 'all']);
         $this->get('/clientsAllDetails',['clients' => 'allDetails']);
-        $this->put('/clientsUpdate',['clients' => 'update']);
+        $this->put('/client-update',['clients' => 'update']);
         $this->get('/clients-show/:id',['clients' => 'show']);
         $this->delete('/clients-delete/:id',['clients' => 'delete']);
 
         /** PRODUITS */
         $this->get('/products',['products' => 'getAllProducts']);
+        $this->get('/popular-products',['products' => 'getPopularProducts']);
         $this->get('/products-show/:id',['products' => 'getProductByID']);
         $this->get('/productsByCategoryID?id={:id}',['products' => 'getProductByCategorydID']);
         $this->post('/new-products',['products' => 'newProduct']);
@@ -72,6 +73,7 @@ class Routes
         $this->post('/new-notes',['notes' => 'newNotes']);
         $this->delete('/delete-notes/:id',['notes' => 'deleteNotes']);
 
+        // CART ITEM
         $this->get('/cartItems',['cartItems' => 'getAllCartItems']);
         $this->get('/cartItems-show/:id',['cartItems' => 'getById']);
         $this->post('/new-cartItems',['cartItems' => 'newCartItems']);

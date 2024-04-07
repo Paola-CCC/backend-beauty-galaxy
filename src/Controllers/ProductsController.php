@@ -58,9 +58,9 @@ class ProductsController
         $productsDatas = [
             'brand_id' => $data['brand_id'],
             'name' => $data['name'],
-            'description_short' => $data['description_short'],
-            'description_long' => $data['description_long'],
-            'product_image' => $data['product_image'],
+            'descriptionShort' => $data['descriptionShort'],
+            'descriptionLong' => $data['descriptionLong'],
+            'thumbnail' => $data['thumbnail'],
             'quantity' => $data['quantity'],
             'category_id' => $data['category_id'],
             'price' => $data['price'],
@@ -72,10 +72,16 @@ class ProductsController
 
         if( count($productRows) === 0) {
 
-            $this->productsManager->createProduct($productsDatas);
-            return json_encode([
-                "message" => 'Le produit a bien été enregistré'
-            ]);
+            if($this->productsManager->createProduct($productsDatas) ) {
+                return json_encode([
+                    "message" => 'Le produit a bien été enregistré'
+                ]);
+            } else {
+                return json_encode([
+                    "error message" => "Le produit n'a pas pu être enregistré"
+                ]);
+            }
+
 
         } else {
 
@@ -93,9 +99,9 @@ class ProductsController
             'id' => (int) $data['id'],
             'brand_id' => $data['brand_id'],
             'name' => $data['name'],
-            'description_short' => $data['description_short'],
-            'description_long' => $data['description_long'],
-            'product_image' => $data['product_image'],
+            'descriptionShort' => $data['descriptionShort'],
+            'descriptionLong' => $data['descriptionLong'],
+            'thumbnail' => $data['thumbnail'],
             'quantity' => $data['quantity'],
             'category_id' => $data['category_id'],
             'price' => $data['price'],

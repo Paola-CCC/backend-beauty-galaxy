@@ -49,13 +49,13 @@ class JwtToken
 
                 $user = new Clients();
                 $user->setId($decoded->id);
-                $user->setUsername($decoded->username);
+                $user->setpseudo($decoded->pseudo);
                 $user->setEmail($decoded->email);
                 $user->setRole($decoded->role);
 
                 return $this->executeRefreshToken([
                     'id' => (int) $decoded->id,
-                    'username' => $decoded->username,
+                    'pseudo' => $decoded->pseudo,
                     'email' => $decoded->email,
                     'role' => $decoded->role
                 ]);

@@ -23,7 +23,12 @@ use PDOException;
     //OK
     public function findAll() 
     {
-        $query = "SELECT * FROM products";
+        $query = "SELECT p.id, p.name, p.descriptionShort, p.descriptionLong, p.thumbnail, p.quantity, p.createdAt, p.price, b.name AS brandName, c.name AS categories 
+        FROM products p
+        LEFT JOIN brands b 
+        ON p.brand_id = b.id
+        LEFT JOIN categories c 
+        ON p.category_id = c.id";
         $stmt = $this->_connexionBD->prepare($query);
         $stmt->execute();
         $row = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -58,12 +63,12 @@ use PDOException;
         $query = "SELECT * FROM products p
         WHERE p.name = :name
         AND p.brand_id = :brand_id
-        AND p.product_image = :product_image";
+        AND p.thumbnail = :thumbnail";
         $stmt = $this->_connexionBD->prepare($query);
         $stmt->execute([
             ':name'  => $data['name'], 
             ':brand_id' => $data['brand_id'],
-            ':product_image' => $data['product_image']
+            ':thumbnail' => $data['thumbnail']
         ]);
         // $row = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $stmt;  
@@ -98,7 +103,7 @@ use PDOException;
         $stmt = $this->_connexionBD->prepare($query);
         $stmt->bindParam(":id", $id , PDO::PARAM_INT);
         $stmt->execute();
-        $row = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
         return $row ; 
         
     }
@@ -113,9 +118,9 @@ use PDOException;
             $query = "UPDATE products 
                       SET brand_id = :brand_id, 
                           name = :name, 
-                          description_short = :description_short, 
-                          description_long = :description_long, 
-                          product_image = :product_image, 
+                          descriptionShort = :descriptionShort, 
+                          descriptionLong = :descriptionLong, 
+                          thumbnail = :thumbnail, 
                           quantity = :quantity, 
                           category_id = :category_id, 
                           price = :price,
@@ -125,9 +130,9 @@ use PDOException;
             $stmt->bindParam(':id', $data['id']);
             $stmt->bindParam(':brand_id', $data['brand_id'], PDO::PARAM_INT);
             $stmt->bindParam(':name', $data['name'], PDO::PARAM_STR);
-            $stmt->bindParam(':description_short', $data['description_short'], PDO::PARAM_STR);
-            $stmt->bindParam(':description_long', $data['description_long'], PDO::PARAM_STR);
-            $stmt->bindParam(':product_image', $data['product_image'], PDO::PARAM_STR);
+            $stmt->bindParam(':descriptionShort', $data['descriptionShort'], PDO::PARAM_STR);
+            $stmt->bindParam(':descriptionLong', $data['descriptionLong'], PDO::PARAM_STR);
+            $stmt->bindParam(':thumbnail', $data['thumbnail'], PDO::PARAM_STR);
             $stmt->bindParam(':quantity', $data['quantity'], PDO::PARAM_INT);
             $stmt->bindParam(':category_id', $data['category_id'], PDO::PARAM_INT);
             $stmt->bindParam(':price', $data['price'], PDO::PARAM_INT);
@@ -138,11 +143,10 @@ use PDOException;
             if(!empty($data['tagsId']) && !empty($data['subCategories'])) {
                 $updatedTags = $this->updateTagsToProduct($data['tagsId'], $product_id);
                 $updatedSubCategories = $this->updateSubCategoriesToProduct($data['subCategories'], $product_id);
-
-                if( $updatedTags !== false && $updatedSubCategories !== false ) {
-                    return true;
-                }
             }
+
+            return true;
+
 
         } catch (PDOException $e) {
             echo "Erreur lors de la mise à jour du produit :" . (int) $data['id'] . $e->getMessage();
@@ -151,18 +155,18 @@ use PDOException;
     }
 
 
-    public function createProduct($data) {
+    public function createProduct(array $data) {
         try {
 
             $query = "INSERT INTO products 
-            (brand_id, name, description_short, description_long, product_image, quantity, category_id, createdAt, updatedAt, price) 
+            (brand_id, name, descriptionShort, descriptionLong, thumbnail, quantity, category_id, createdAt, updatedAt, price) 
             VALUES 
                 (
                 :brand_id, 
                 :name, 
-                :description_short, 
-                :description_long, 
-                :product_image, 
+                :descriptionShort, 
+                :descriptionLong, 
+                :thumbnail, 
                 :quantity, 
                 :category_id, 
                 CURRENT_TIMESTAMP, 
@@ -171,25 +175,23 @@ use PDOException;
             $stmt = $this->_connexionBD->prepare($query);
             $stmt->bindParam(':brand_id',$data['brand_id'], PDO::PARAM_INT);
             $stmt->bindParam(':name', $data['name'], PDO::PARAM_STR);
-            $stmt->bindParam(':description_short', $data['description_short'], PDO::PARAM_STR);
-            $stmt->bindParam(':description_long', $data['description_long'], PDO::PARAM_STR);
-            $stmt->bindParam(':product_image', $data['product_image'], PDO::PARAM_STR);
+            $stmt->bindParam(':descriptionShort', $data['descriptionShort'], PDO::PARAM_STR);
+            $stmt->bindParam(':descriptionLong', $data['descriptionLong'], PDO::PARAM_STR);
+            $stmt->bindParam(':thumbnail', $data['thumbnail'], PDO::PARAM_STR);
             $stmt->bindParam(':quantity', $data['quantity'], PDO::PARAM_INT);
             $stmt->bindParam(':category_id', $data['category_id'], PDO::PARAM_INT);
             $stmt->bindParam(':price', $data['price'], PDO::PARAM_INT);
-            $stmt->execute();
 
-            $product_id = $this->_connexionBD->lastInsertId();
+            if($stmt->execute()){
+                $product_id = $this->_connexionBD->lastInsertId();
 
-            if(!empty($data['tagsId']) && !empty($data['subCategories'])) {
-                $addedtags = $this->addTagsToProduct($data['tagsId'], $product_id);
-                $addedSubCategories = $this->addSubCategoriesToProduct($data['subCategories'], $product_id);
-
-                if( $addedtags !== false && $addedSubCategories !== false) {
-                    return true;
+                if(!empty($data['tagsId']) && !empty($data['subCategories'])) {
+                    $addedtags = $this->addTagsToProduct($data['tagsId'], $product_id);
+                    $addedSubCategories = $this->addSubCategoriesToProduct($data['subCategories'], $product_id);   
                 }
-            }
+                return true;
 
+            }
         } catch (PDOException $e) {
             echo "Erreur lors de la création du produit :" . $e->getMessage();
             return false;
