@@ -143,11 +143,10 @@ use PDOException;
             if(!empty($data['tagsId']) && !empty($data['subCategories'])) {
                 $updatedTags = $this->updateTagsToProduct($data['tagsId'], $product_id);
                 $updatedSubCategories = $this->updateSubCategoriesToProduct($data['subCategories'], $product_id);
-
-                if( $updatedTags !== false && $updatedSubCategories !== false ) {
-                    return true;
-                }
             }
+
+            return true;
+
 
         } catch (PDOException $e) {
             echo "Erreur lors de la mise à jour du produit :" . (int) $data['id'] . $e->getMessage();
@@ -188,15 +187,9 @@ use PDOException;
 
                 if(!empty($data['tagsId']) && !empty($data['subCategories'])) {
                     $addedtags = $this->addTagsToProduct($data['tagsId'], $product_id);
-                    $addedSubCategories = $this->addSubCategoriesToProduct($data['subCategories'], $product_id);
-
-                    if( $addedtags !== false && $addedSubCategories !== false) {
-                        echo "Données bien rentrées : ". $product_id ;
-                        return true;
-                    } else {
-                        return false;
-                    }
+                    $addedSubCategories = $this->addSubCategoriesToProduct($data['subCategories'], $product_id);   
                 }
+                return true;
 
             }
         } catch (PDOException $e) {
