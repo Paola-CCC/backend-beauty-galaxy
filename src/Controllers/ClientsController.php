@@ -42,7 +42,7 @@ class ClientsController
 
                     $client = new Clients();
                     $client->setId($row['id']);
-                    $client->setUsername($row['username']);
+                    $client->setpseudo($row['pseudo']);
                     $client->setFirstname($row['firstname']);
                     $client->setLastname($row['lastname']);
                     $client->setEmail($row['email']);
@@ -56,6 +56,10 @@ class ClientsController
                         http_response_code(200);
                         return json_encode([
                             'jwt' => $this->addDatasToJWT($client->getEmail()),
+                            'user' => [
+                                'id' => $client->getId(),
+                                'email' => $client->getEmail(),
+                            ]
                         ]);
                     }
 
@@ -84,7 +88,7 @@ class ClientsController
         $tabDatas = [
             "lastname" => $data['lastname'], 
             "firstname" => $data['firstname'],
-            "username" => $data['username'],
+            "pseudo" => $data['pseudo'],
             "email" =>  $data['email'],
             "password" => $data['password'],
             "role" => self::ROLE_ID,
@@ -94,14 +98,30 @@ class ClientsController
         $num = $this->clientsManager->findByEmail($email)->rowCount(); 
 
         if ($num === 0 ){
-
+ 
             if($this->clientsManager->insertUser($tabDatas) === true){
-                http_response_code(200);
+
+                $lastClientInsert = $this->clientsManager->getLastInsertId();
+                $userClient = $this->clientsManager->findById((int) $lastClientInsert);
+
+                $client = new Clients();
+                $client->setId((int) $lastClientInsert);
+                $client->setpseudo($userClient['pseudo']);
+                $client->setFirstname($userClient['firstname']);
+                $client->setLastname($userClient['lastname']);
+                $client->setEmail($userClient['email']);
+                $client->setRole($userClient['role_name']);
+                $client->setBirthday($userClient['birthday']);
+
                 return json_encode([
                     'jwt' => $this->addDatasToJWT($email),
+                    'user' => [
+                        'id' => $client->getId(),
+                        'email' => $client->getEmail(),
+                    ]
                 ]);
             } else {
-                http_response_code(404);
+
                 return json_encode([
                     "message" => "Inpossible de s'inscrire"
                 ]);
@@ -128,7 +148,7 @@ class ClientsController
 
                 $userInfosJWT = [
                     'id' => (int) $value["id"],
-                    'username' => $value["username"],
+                    'pseudo' => $value["pseudo"],
                     'email' => $value["email"],
                     'role' => $value["role_name"]
                 ];
@@ -147,14 +167,14 @@ class ClientsController
 
         $data = json_decode(file_get_contents('php://input'), true);
         $userId = $data['userId'];
-        $username = $data['username'] ;
+        $pseudo = $data['pseudo'] ;
         $email = $data['email'];
         $password = $data['password'] ;
 
         http_response_code(200);
         return json_encode($this->clientsManager->update([
             "id" => $userId,
-            "username" => $username,
+            "pseudo" => $pseudo,
             "email" =>  $email,
             "password" => $password,
         ]));

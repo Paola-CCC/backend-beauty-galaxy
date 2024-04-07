@@ -2,10 +2,8 @@
 
 namespace App\Managers;
 
-use App\Entity\Clients;
 use App\Managers\ConnexionPDO;
 use DateTimeImmutable;
-use IntlDateFormatter;
 use PDO;
 
  class ClientsManager 
@@ -25,7 +23,7 @@ use PDO;
     public function findById(?int $id ) 
     {
 
-        $query = "SELECT c.id, c.username, c.firstname, c.lastname, c.email, c.password, c.created_at, c.birthday, r.name  as role_name
+        $query = "SELECT c.id, c.pseudo, c.firstname, c.lastname, c.email, c.password, c.created_at, c.birthday, r.name  as role_name
                   FROM clients c
                   LEFT JOIN role r ON c.role_Id = r.id
                   WHERE c.id = :id";
@@ -41,7 +39,7 @@ use PDO;
     public function findByEmail(string $email) 
     {
 
-        $query = "SELECT c.id, c.username, c.firstname, c.lastname, c.email, c.password, c.created_at, c.birthday, r.name as role_name
+        $query = "SELECT c.id, c.pseudo, c.firstname, c.lastname, c.email, c.password, c.created_at, c.birthday, r.name as role_name
         FROM clients c
         LEFT JOIN role r ON c.role_Id = r.id
         WHERE c.email = :email";
@@ -56,7 +54,7 @@ use PDO;
     public function findAll()
     {
 
-        $query = "SELECT c.id, c.firstname, c.lastname, c.username, c.email, c.created_at, c.birthday, r.name as role_name
+        $query = "SELECT c.id, c.firstname, c.lastname, c.pseudo, c.email, c.created_at, c.birthday, r.name as role_name
         FROM clients c
         LEFT JOIN role r 
         ON c.role_Id = r.id";
@@ -75,11 +73,11 @@ use PDO;
         $now = new DateTimeImmutable('now', new \DateTimeZone('Europe/Paris'));
         $created_at = $now->format('Y-m-d H:i');
 
-        $query = "INSERT INTO clients ( firstname, lastname, username, email, password, created_at, role_Id ,birthday ) VALUES ( :firstname, :lastname, :username, :email, :password, :created_at, :role_Id ,:birthday)";
+        $query = "INSERT INTO clients ( firstname, lastname, pseudo, email, password, created_at, role_Id ,birthday ) VALUES ( :firstname, :lastname, :pseudo, :email, :password, :created_at, :role_Id ,:birthday)";
         $stmt = $this->_connexionBD->prepare($query);
         $stmt->bindParam(":firstname", $data['firstname']);
         $stmt->bindParam(":lastname", $data['lastname']);
-        $stmt->bindParam(":username", $data['username']);
+        $stmt->bindParam(":pseudo", $data['pseudo']);
         $stmt->bindParam(":email", $data['email']);
         $stmt->bindParam(":password", $password);
         $stmt->bindParam(":created_at",$created_at);
@@ -87,19 +85,6 @@ use PDO;
         $stmt->bindParam(":birthday", $data['birthday']);
 
         if($stmt->execute()){ 
-
-            $lastInsertedId = $this->_connexionBD->lastInsertId();
-            $userClient = $this->findById($lastInsertedId);
-
-            $client = new Clients();
-            $client->setId($lastInsertedId);
-            $client->setUsername($userClient['username']);
-            $client->setFirstname($userClient['firstname']);
-            $client->setLastname($userClient['lastname']);
-            $client->setEmail($userClient['email']);
-            $client->setRole($userClient['role_name']);
-            $client->setBirthday($userClient['birthday']);
-
             return true;
         } else {
             return false;
@@ -114,10 +99,10 @@ use PDO;
         // Formatage de la date en format SQL
         $created_at = $now->format('Y-m-d H:i:s');
 
-        $query = "UPDATE user SET username=:username, email=:email, password=:password, created_at=:created_at, role_Id=:role_Id, birthday=:birthday WHERE id = :id";
+        $query = "UPDATE user SET pseudo=:pseudo, email=:email, password=:password, created_at=:created_at, role_Id=:role_Id, birthday=:birthday WHERE id = :id";
         $stmt = $this->_connexionBD->prepare($query);
         $stmt->bindParam(":id", $data['id']);
-        $stmt->bindParam(":username", $data['username']);
+        $stmt->bindParam(":pseudo", $data['pseudo']);
         $stmt->bindParam(":email", $data['email']);
         $stmt->bindParam(":password", $password);
         $stmt->bindParam(":created_at",$created_at );
@@ -134,4 +119,10 @@ use PDO;
         $stmt->bindParam(":id", $id, PDO::PARAM_INT);
         $stmt->execute();
     }
+
+    public function getLastInsertId()
+    {
+        return $this->_connexionBD->lastInsertId();
+    }
+
  }

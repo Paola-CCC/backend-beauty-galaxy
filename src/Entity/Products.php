@@ -11,9 +11,9 @@ class Products {
     private ?int $id = null;
     private ?int $brand_id = null;
     private ?string $name = null;
-    private ?string $description_short = null;
-    private ?string $description_long = null;
-    private ?string $product_image = null;
+    private ?string $descriptionShort = null;
+    private ?string $descriptionLong = null;
+    private ?string $thumbnail = null;
     private ?int $quantity = null;
     private ?int $category_id = null;
     private ?\DateTimeImmutable $createdAt;
@@ -58,38 +58,38 @@ class Products {
         return $this;
     }
 
-    public function getDescription_short (): ?string
+    public function getDescriptionShort (): ?string
     {
-        return $this->description_short;
+        return $this->descriptionShort;
     }
 
-    public function setDescription_short (string $description_short): self
+    public function setDescriptionShort (string $descriptionShort): self
     {
-        $this->description_short = $description_short;
+        $this->descriptionShort = $descriptionShort;
 
         return $this;
     }
 
-    public function getDescription_long (): ?string
+    public function getDescriptionLong (): ?string
     {
-        return $this->description_long;
+        return $this->descriptionLong;
     }
 
-    public function setDescription_long (string $description_long): self
+    public function setDescriptionLong (string $descriptionLong): self
     {
-        $this->description_long = $description_long;
+        $this->descriptionLong = $descriptionLong;
 
         return $this;
     }
 
-    public function getProduct_image (): ?string
+    public function getThumbnail (): ?string
     {
-        return $this->product_image;
+        return $this->thumbnail;
     }
 
-    public function setProduct_image (string $product_image): self
+    public function setThumbnail (string $thumbnail): self
     {
-        $this->product_image = $product_image;
+        $this->thumbnail = $thumbnail;
 
         return $this;
     }
