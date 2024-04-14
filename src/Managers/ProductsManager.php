@@ -133,7 +133,13 @@ use PDOException;
     public function findById(int $id) 
     {
 
-        $query = "SELECT * FROM products WHERE id=:id";
+        $query = "SELECT p.id, p.name, p.descriptionShort, p.descriptionLong, p.thumbnail, p.quantity, p.createdAt, p.price, b.name AS brandName, c.name AS categories 
+        FROM products p
+        LEFT JOIN brands b 
+        ON p.brand_id = b.id
+        LEFT JOIN categories c 
+        ON p.category_id = c.id
+        WHERE p.id = :id";
         $stmt = $this->_connexionBD->prepare($query);
         $stmt->bindParam(":id", $id , PDO::PARAM_INT);
         $stmt->execute();

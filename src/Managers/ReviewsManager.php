@@ -22,7 +22,10 @@ class ReviewsManager
     //OK
     public function findAll() 
     {
-        $query = "SELECT * FROM reviews";
+        $query = "SELECT r.id , r.product_id, r.rating, r.comment, r.createdAt, r.updatedAt, c.pseudo
+        FROM reviews r
+        LEFT JOIN clients c 
+        ON r.client_id = c.id";
         $stmt = $this->_connexionBD->prepare($query);
         $stmt->execute();
         $row = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -35,7 +38,11 @@ class ReviewsManager
     public function findById(int $id) 
     {
 
-        $query = "SELECT * FROM reviews WHERE id=:id";
+        $query = "SELECT r.id , r.product_id, r.rating, r.comment, r.createdAt, r.updatedAt , c.pseudo
+        FROM reviews
+        LEFT JOIN clients c 
+        ON r.client_id = c.id
+        WHERE id=:id";
         $stmt = $this->_connexionBD->prepare($query);
         $stmt->bindParam(":id", $id , PDO::PARAM_INT);
         $stmt->execute();
