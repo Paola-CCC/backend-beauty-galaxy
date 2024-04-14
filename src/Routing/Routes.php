@@ -25,6 +25,7 @@ class Routes
 
         /** PRODUITS */
         $this->get('/products',['products' => 'getAllProducts']);
+        $this->get('/latest-products',['products' => 'getLatestProducts']);
         $this->get('/popular-products',['products' => 'getPopularProducts']);
         $this->get('/products-show/:id',['products' => 'getProductByID']);
         $this->get('/productsByCategoryID?id={:id}',['products' => 'getProductByCategorydID']);

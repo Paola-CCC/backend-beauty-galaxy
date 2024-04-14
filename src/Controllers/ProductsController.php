@@ -33,6 +33,20 @@ class ProductsController
         return json_encode($this->productsManager->findById($id));
     }
 
+    public function getLatestProducts()
+    {
+        http_response_code(200);
+        return json_encode($this->productsManager->findLatestProduct());
+    }
+
+
+    public function getPopularProducts()
+    {
+        http_response_code(200);
+        return json_encode($this->productsManager->findFourMostPopularProduct());
+    }
+
+
     /**
     * @param int $int
     */
@@ -51,11 +65,6 @@ class ProductsController
         return json_encode($this->productsManager->findByCategorydId($id));
     }
 
-    public function getPopularProducts()
-    {
-        http_response_code(200);
-        return json_encode($this->productsManager->findFourMostPopularProduct());
-    }
 
     public function newProduct() 
     {
