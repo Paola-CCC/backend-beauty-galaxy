@@ -28,8 +28,10 @@ class Routes
         $this->get('/latest-products',['products' => 'getLatestProducts']);
         $this->get('/popular-products',['products' => 'getPopularProducts']);
         $this->get('/products-show/:id',['products' => 'getProductByID']);
-        $this->get('/productsByCategoryID?id={:id}',['products' => 'getProductByCategorydID']);
+        $this->get('/products-category?id={:id}',['products' => 'getProductByCategorydID']);
+        $this->get('/filter-products?name={:name}',['products' => 'filterProductByName']);
         $this->post('/new-products',['products' => 'newProduct']);
+        $this->post('/search-products',['products' => 'searchProduct']);
         $this->put('/update-products',['products' => 'updateProduct']);
         $this->delete('/product-delete/:id',['products' => 'delete']);
 
@@ -47,7 +49,7 @@ class Routes
         $this->put('/update-tags',['tags' => 'updateTag']);
         $this->delete('/delete-tags/:id',['tags' => 'deleteTag']);
 
-        // Categories
+        // Catégories
         $this->get('/categories',['categories' => 'getAllcategories']);
         $this->get('/categories-show/:id',['categories' => 'getById']);
         $this->post('/new-categories',['categories' => 'newCategories']);
@@ -143,16 +145,21 @@ class Routes
     {    
 
         $routePrefix = strstr($path, '?', true);
-        $subject = $path;
         $pattern = "/\/:(\w+)/";
 
-        if (preg_match("/=({:id})/", $subject, $matches)) {
+        if (preg_match("/=({:name})/", $path)) {
+
+            return [
+                'path' => $routePrefix,
+                'regExReplace' => '/^[a-zA-Z]*$/'
+            ];
+        } elseif (preg_match("/=({:id})/", $path)) {
             return [
                 'path' => $routePrefix,
                 'regExReplace' => '(\d+)'
             ];
-        } else if( preg_match($pattern, $subject)) {
-            $cleanPath = preg_replace( $pattern, '',$subject);
+        } elseif ( preg_match($pattern, $path)) {
+            $cleanPath = preg_replace( $pattern, '',$path);
             return [
                 'path' => $cleanPath ,
                 'regExReplace' => '(\d+)'

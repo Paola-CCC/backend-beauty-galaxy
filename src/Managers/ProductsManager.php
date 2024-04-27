@@ -88,6 +88,27 @@ use PDOException;
     }
 
 
+        /**
+    * @param string $name
+    */
+    public function allFilterName(string $name) 
+    {
+
+        $query = "SELECT * FROM products p
+        WHERE p.name LIKE :name
+            OR p.descriptionShort LIKE :name
+            OR p.descriptionLong LIKE :name
+            GROUP BY p.id";
+        $stmt = $this->_connexionBD->prepare($query);
+        $stmt->execute([
+            ':name'  => '%'. $name .'%'
+        ]);
+        $row = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $row;  
+    }
+
+
+
     /**
     * @param string $name
     */
@@ -236,6 +257,133 @@ use PDOException;
             echo "Erreur lors de la création du produit :" . $e->getMessage();
             return false;
         }
+    }
+
+
+
+
+    public function searchGroup(array $data)
+    {
+      
+            $query = "SELECT p.id, p.name, p.descriptionShort, p.descriptionLong, p.thumbnail, p.quantity, p.createdAt, p.price, b.name AS brandName, c.name AS categories, GROUP_CONCAT(sc.name SEPARATOR ',') AS subCategoryNames
+                FROM products p
+                LEFT JOIN brands b 
+                    ON p.brand_id = b.id
+                LEFT JOIN categories c 
+                    ON p.category_id = c.id
+                LEFT JOIN productID_subCategoriesID pcs 
+                    ON p.id = pcs.Id_product
+                LEFT JOIN sub_categories sc 
+                    ON pcs.Id_subCategory = sc.id
+                WHERE b.id = :brand_id
+                    AND c.id = :category_id
+                    AND sc.id = :subCategory_Id
+                    AND p.price BETWEEN :price_min AND :price_max
+                GROUP BY p.id";
+            $stmt = $this->_connexionBD->prepare($query);
+            $stmt->bindParam(":subCategory_Id", $data['subCategory_Id'], PDO::PARAM_INT);
+            $stmt->bindParam(":brand_id", $data['brand_id'], PDO::PARAM_INT);
+            $stmt->bindParam(":category_id", $data['category_id'], PDO::PARAM_INT);
+            $stmt->bindParam(':price_min', $price_min, PDO::PARAM_INT);
+            $stmt->bindParam(':price_max', $price_max, PDO::PARAM_INT);
+            $stmt->execute();
+            $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+            return $rows;
+    }
+
+
+    public function search(array $data)
+    {
+      
+        $queryConstruction = "";
+        $jointure = "";
+        $where = "" ;
+
+        $sql = "SELECT p.id, p.name, p.descriptionShort, p.descriptionLong, p.thumbnail, p.quantity, p.createdAt, p.price";
+
+        if($data['brand_id']){
+            $sql .= ", b.name AS brandName";
+            $jointure .= " LEFT JOIN brands b ON p.brand_id = b.id";
+
+            if( $where === "") {
+                $where .= " WHERE b.id = :brand_id";
+            } else {
+                $where .= " AND b.id = :brand_id";
+            }
+        };
+
+        if($data['category_id']){
+            $sql .= ", c.name AS categories";
+            $jointure .= " LEFT JOIN categories c ON p.category_id = c.id";
+
+            if( $where === ""){
+                $where .= " WHERE c.id = :category_id";
+            } else {
+                $where .= " AND c.id = :category_id";
+            }
+        };
+
+
+        if($data['subCategory_Id']){
+            $sql .= ", GROUP_CONCAT(sc.name SEPARATOR ',') AS subCategoryNames";
+            $jointure .= " LEFT JOIN productID_subCategoriesID pcs ON p.id = pcs.Id_product LEFT JOIN sub_categories sc ON pcs.Id_subCategory = sc.id";
+
+            if( $where === ""){
+                $where .= " WHERE sc.id = :subCategory_Id";
+            } else {
+                $where .= " AND sc.id = :subCategory_Id";
+            }
+        };
+
+
+        if($data['price_min'] && $data['price_max'] ){
+    
+            if( $where === "") {
+                $where .= "WHERE p.price BETWEEN :price_min AND :price_max";
+            } else {
+                $where .= " AND p.price BETWEEN :price_min AND :price_max";
+            }
+        };
+
+
+        $queryConstruction = $sql . " FROM products p ";
+
+        if( $jointure !== ""){
+            $queryConstruction .= $jointure;
+        }
+
+        if( $where !== ""){
+            $queryConstruction .= $where;
+        }
+
+        $queryConstruction .= " GROUP BY p.id";
+
+        $stmt = $this->_connexionBD->prepare($queryConstruction);
+        
+        if($data['brand_id'] ) {
+            $stmt->bindParam(":brand_id", $data['brand_id'], PDO::PARAM_INT);
+        };
+
+        if($data['category_id']) {
+            $stmt->bindParam(":category_id", $data['category_id'], PDO::PARAM_INT);
+        };
+
+        if( $data['subCategory_Id']) {
+            $stmt->bindParam(":subCategory_Id", $data['subCategory_Id'], PDO::PARAM_INT);
+        };
+
+        if( $data['price_min']) {
+            $stmt->bindParam(":price_min", $data['price_min'], PDO::PARAM_INT);
+        };
+
+        if( $data['price_max']) {
+            $stmt->bindParam(":price_max", $data['price_max'], PDO::PARAM_INT);
+        }
+ 
+        $stmt->execute();
+        $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        return $rows;
+
     }
 
     public function delete(?int $id) 

@@ -65,6 +65,13 @@ class ProductsController
         return json_encode($this->productsManager->findByCategorydId($id));
     }
 
+    public function filterProductByName(string $name) 
+    {
+        echo " name ". $name ;
+        return json_encode($this->productsManager->allFilterName($name));
+
+    }
+
 
     public function newProduct() 
     {
@@ -125,6 +132,21 @@ class ProductsController
         ];
 
         return json_encode($this->productsManager->updateProduct($productsDatas));
+    }
+
+    public function searchProduct()
+    {
+        $data = $this->httpRequest->getBody();
+        $productsDatas = [
+            'brand_id' => (int) $data['brandId'] ?? null,
+            'category_id' => (int) $data['categoryId'] ?? null,
+            'price_min' => (int) $data['minPrice'] ?? null,
+            'price_max' => (int) $data['maxPrice'] ?? null,
+            'subCategory_Id' => (int) $data['subCategoryId'] ?? null
+        ];
+
+        return json_encode($this->productsManager->search($productsDatas));
+
     }
 
     public function delete(?int $id) 
