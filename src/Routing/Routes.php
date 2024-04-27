@@ -15,12 +15,12 @@ class Routes
     public function __construct() {
 
         /** Clients */
+        $this->get('/clientsAllDetails',['clients' => 'allDetails']);
+        $this->get('/clients-show/:id',['clients' => 'show']);
+        $this->get('/clients',['clients' => 'all']);
         $this->post('/register',['clients' => 'register']);
         $this->post('/login',['clients' => 'login']);
-        $this->get('/clients',['clients' => 'all']);
-        $this->get('/clientsAllDetails',['clients' => 'allDetails']);
         $this->put('/client-update',['clients' => 'update']);
-        $this->get('/clients-show/:id',['clients' => 'show']);
         $this->delete('/clients-delete/:id',['clients' => 'delete']);
 
         /** PRODUITS */
@@ -30,6 +30,8 @@ class Routes
         $this->get('/products-show/:id',['products' => 'getProductByID']);
         $this->get('/products-category?id={:id}',['products' => 'getProductByCategorydID']);
         $this->get('/filter-products?name={:name}',['products' => 'filterProductByName']);
+        $this->get('/all-criterias',['products' => 'getAllCriterias']);
+
         $this->post('/new-products',['products' => 'newProduct']);
         $this->post('/search-products',['products' => 'searchProduct']);
         $this->put('/update-products',['products' => 'updateProduct']);

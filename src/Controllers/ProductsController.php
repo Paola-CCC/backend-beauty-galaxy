@@ -3,7 +3,10 @@
 
 namespace App\Controllers;
 
+use App\Managers\BrandsManager;
+use App\Managers\CategoriesManager;
 use App\Managers\ProductsManager;
+use App\Managers\SubCategoriesManager;
 use App\Service\HttpRequest;
 
 class ProductsController 
@@ -18,10 +21,26 @@ class ProductsController
         $this->httpRequest = new HttpRequest();
     }
 
+
     public function getAllProducts()
     {
         http_response_code(200);
         return json_encode($this->productsManager->findAll());
+    }
+
+
+    public function getAllCriterias()
+    {
+
+        $brandsManager = new BrandsManager('brands');
+        $categoriesManager = new CategoriesManager('brands');
+        $subCategoriesManager = new SubCategoriesManager('brands');
+
+        return json_encode([
+            'brands' => $brandsManager->findAll(),
+            'categories' => $categoriesManager->findAll(),
+            'subCategories' =>  $subCategoriesManager->findAll()
+        ]);
     }
 
     /**
