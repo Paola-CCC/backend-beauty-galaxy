@@ -33,8 +33,8 @@ class ProductsController
     {
 
         $brandsManager = new BrandsManager('brands');
-        $categoriesManager = new CategoriesManager('brands');
-        $subCategoriesManager = new SubCategoriesManager('brands');
+        $categoriesManager = new CategoriesManager('categories');
+        $subCategoriesManager = new SubCategoriesManager('sub_categories');
 
         return json_encode([
             'brands' => $brandsManager->findAll(),
@@ -88,7 +88,6 @@ class ProductsController
     {
         echo " name ". $name ;
         return json_encode($this->productsManager->allFilterName($name));
-
     }
 
 

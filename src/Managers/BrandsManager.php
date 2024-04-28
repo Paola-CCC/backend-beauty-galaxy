@@ -19,14 +19,45 @@ class BrandsManager
         $this->_connexionBD = $instanceBD->getConnection();
     }
 
-    //OK
+    // OK
     public function findAll() 
     {
-        $query = "SELECT * FROM brands";
+        
+        $query = "SELECT b.id, b.name , 
+            GROUP_CONCAT(
+                JSON_OBJECT(
+                    'id', c.id,
+                    'name', c.name
+                )
+            ) AS categories
+        FROM brands b
+        LEFT JOIN brandID_CategoryID b_c 
+            ON b.id = b_c.brand_id
+        LEFT JOIN categories c 
+            ON c.id = b_c.category_id
+        GROUP BY 
+            b.id, 
+            b.name;
+        ";
         $stmt = $this->_connexionBD->prepare($query);
         $stmt->execute();
         $row = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        return $row;
+
+        $datas = [];
+
+        foreach ($row as  $value) {
+            $categories = json_decode('[' . $value['categories'] . ']', true);
+            $datas [] = [
+                "id" => $value['id'],
+                "name" => $value['name'],
+                "categories" => $categories
+            ];
+            // print_r($categories);
+            // var_dump($value['categories']);
+        }
+
+        // var_dump($row );
+        return $datas;
     }
     
 

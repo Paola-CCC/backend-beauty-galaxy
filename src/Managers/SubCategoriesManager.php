@@ -22,7 +22,10 @@ class SubCategoriesManager
     //OK
     public function findAll() 
     {
-        $query = "SELECT * FROM sub_categories";
+        $query = "SELECT sub.id , sub.name, c.id AS categoryId , c.name AS categoryName
+        FROM sub_categories sub
+        LEFT JOIN categories c
+        ON c.id = sub.category_id";
         $stmt = $this->_connexionBD->prepare($query);
         $stmt->execute();
         $row = $stmt->fetchAll(PDO::FETCH_ASSOC);

@@ -172,7 +172,8 @@ use PDOException;
     /**
     * @param array $data
     */
-    public function updateProduct(?array $data) {
+    public function updateProduct(?array $data) 
+    {
 
         try {
 
@@ -216,7 +217,8 @@ use PDOException;
     }
 
 
-    public function createProduct(array $data) {
+    public function createProduct(array $data) 
+    {
         try {
 
             $query = "INSERT INTO products 
@@ -284,8 +286,8 @@ use PDOException;
             $stmt->bindParam(":subCategory_Id", $data['subCategory_Id'], PDO::PARAM_INT);
             $stmt->bindParam(":brand_id", $data['brand_id'], PDO::PARAM_INT);
             $stmt->bindParam(":category_id", $data['category_id'], PDO::PARAM_INT);
-            $stmt->bindParam(':price_min', $price_min, PDO::PARAM_INT);
-            $stmt->bindParam(':price_max', $price_max, PDO::PARAM_INT);
+            $stmt->bindParam(':price_min', $data['price_min'], PDO::PARAM_INT);
+            $stmt->bindParam(':price_max', $data['price_max'], PDO::PARAM_INT);
             $stmt->execute();
             $rows = $stmt->fetchAll(PDO::FETCH_ASSOC);
             return $rows;
