@@ -12,5 +12,4 @@ require __DIR__ . '/src/Utils/config.php';
 use App\Routing\Router;
 
 $router = new Router();
-$router->getAllRoutes();
 echo $router->run();

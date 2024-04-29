@@ -26,7 +26,7 @@ class Router
     {
         $query = $this->request->getQueryStringParams();
         $method = $this->request->getMethod();
-        
+
         foreach ($this->routes as $route) {
 
             if ($route['method'] !== $method) {
@@ -53,6 +53,8 @@ class Router
 
                         if(isset($query['id'])) {
                             return $class->$action((int) $query['id']);
+                        } else if (isset($query['name'])) {
+                            return $class->$action((string) $query['name']);
                         } else {
                             return $class->$action();
                         }

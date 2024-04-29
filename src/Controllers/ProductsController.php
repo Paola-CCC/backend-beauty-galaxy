@@ -3,7 +3,10 @@
 
 namespace App\Controllers;
 
+use App\Managers\BrandsManager;
+use App\Managers\CategoriesManager;
 use App\Managers\ProductsManager;
+use App\Managers\SubCategoriesManager;
 use App\Service\HttpRequest;
 
 class ProductsController 
@@ -11,6 +14,7 @@ class ProductsController
 
     private $productsManager ;
     private $httpRequest ;
+    private array $allProducts ;
 
     public function __construct()
     {
@@ -18,10 +22,63 @@ class ProductsController
         $this->httpRequest = new HttpRequest();
     }
 
+    // Tranfome le Json contenant en tableau et calcule la moyenne de note 
+    public function getProductsNotes(array $productsList)
+    {
+
+        $datas = [];
+
+        foreach ($productsList as  $value) {
+            $notes = json_decode('[' . $value['notes_product'] . ']', true);
+            $productNotes = 0;
+            $counter = count($notes);
+             if ($counter > 0) {
+                foreach ($notes as $valuesNotes) {
+                    $productNotes += $valuesNotes["notes"] / $counter;
+                }
+             }
+
+            $datas [] = [
+                "id" => $value['id'],
+                "name" => $value['name'],
+                "descriptionShort" => $value["descriptionShort"],
+                "descriptionLong" => $value["descriptionLong"],
+                "thumbnail" => $value["thumbnail"],
+                "quantity" => $value["quantity"],
+                "createdAt" => $value["createdAt"],
+                "price" => $value["price"],
+                "brandName" => $value["brandName"],
+                "categories" =>  $value["categories"],
+                "notes" => $productNotes,                
+            ];
+
+        }
+
+        return $datas;
+    }
+
     public function getAllProducts()
     {
-        http_response_code(200);
-        return json_encode($this->productsManager->findAll());
+
+        $productsList = $this->productsManager->findAll();
+        $this->allProducts = $this->getProductsNotes($productsList);
+
+        return json_encode($this->allProducts);
+    }
+
+
+    public function getAllCriterias()
+    {
+
+        $brandsManager = new BrandsManager('brands');
+        $categoriesManager = new CategoriesManager('categories');
+        $subCategoriesManager = new SubCategoriesManager('sub_categories');
+
+        return json_encode([
+            'brands' => $brandsManager->findAll(),
+            'categories' => $categoriesManager->findAll(),
+            'subCategories' =>  $subCategoriesManager->findAll()
+        ]);
     }
 
     /**
@@ -30,20 +87,26 @@ class ProductsController
     public function getProductByID(?int $id)
     {
         http_response_code(200);
-        return json_encode($this->productsManager->findById($id));
+        $productsList = $this->productsManager->findById($id);
+        $this->allProducts = $this->getProductsNotes([$productsList]);
+        return json_encode($this->allProducts[0]);
     }
 
     public function getLatestProducts()
     {
-        http_response_code(200);
-        return json_encode($this->productsManager->findLatestProduct());
+
+        $productsList = $this->productsManager->findAll();
+        $this->allProducts = $this->getProductsNotes($productsList);
+        return json_encode($this->allProducts);
     }
 
 
     public function getPopularProducts()
     {
-        http_response_code(200);
-        return json_encode($this->productsManager->findFourMostPopularProduct());
+
+        $productsList = $this->productsManager->findFourMostPopularProduct();
+        $this->allProducts = $this->getProductsNotes($productsList);
+        return json_encode($this->allProducts);
     }
 
 
@@ -63,6 +126,12 @@ class ProductsController
     {
         http_response_code(200);
         return json_encode($this->productsManager->findByCategorydId($id));
+    }
+
+    public function filterProductByName(string $name) 
+    {
+        echo " name ". $name ;
+        return json_encode($this->productsManager->allFilterName($name));
     }
 
 
@@ -125,6 +194,25 @@ class ProductsController
         ];
 
         return json_encode($this->productsManager->updateProduct($productsDatas));
+    }
+
+    public function searchProduct()
+    {
+        $data = $this->httpRequest->getBody();
+        $productsDatas = [
+            'brand_id' => (int) $data['brandId'] ?? null,
+            'category_id' => (int) $data['categoryId'] ?? null,
+            'price_min' => (int) $data['minPrice'] ?? null,
+            'price_max' => (int) $data['maxPrice'] ?? null,
+            'subCategory_Id' => (int) $data['subCategoryId'] ?? null
+        ];
+
+        // return json_encode($this->productsManager->search($productsDatas));
+
+        $productsList = $this->productsManager->search($productsDatas);
+        $this->allProducts = $this->getProductsNotes($productsList);
+        return json_encode($this->allProducts);
+
     }
 
     public function delete(?int $id) 
