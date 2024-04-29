@@ -23,12 +23,24 @@ use PDOException;
     //OK
     public function findAll() 
     {
-        $query = "SELECT p.id, p.name, p.descriptionShort, p.descriptionLong, p.thumbnail, p.quantity, p.createdAt, p.price, b.name AS brandName, c.name AS categories 
+        $query = "SELECT p.id, p.name, p.descriptionShort, p.descriptionLong, p.thumbnail, p.quantity, p.createdAt, p.price, b.name AS brandName, c.name AS categories, 
+        GROUP_CONCAT(
+            JSON_OBJECT(
+                'id', n.id,
+                'notes', n.notes,
+                'date', n.createdAt
+            )
+        ) AS notes_product
         FROM products p
+        LEFT JOIN notes n
+        ON p.id = n.product_id
         LEFT JOIN brands b 
         ON p.brand_id = b.id
         LEFT JOIN categories c 
-        ON p.category_id = c.id";
+        ON p.category_id = c.id
+        GROUP BY 
+            p.id, 
+            p.name;";
         $stmt = $this->_connexionBD->prepare($query);
         $stmt->execute();
         $row = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -38,12 +50,24 @@ use PDOException;
 
     public function findFourMostPopularProduct() 
     {
-        $query = "SELECT p.id, p.name, p.descriptionShort, p.descriptionLong, p.thumbnail, p.quantity, p.createdAt, p.price, b.name AS brandName, c.name AS categories 
+        $query = "SELECT p.id, p.name, p.descriptionShort, p.descriptionLong, p.thumbnail, p.quantity, p.createdAt, p.price, b.name AS brandName, c.name AS categories, 
+        GROUP_CONCAT(
+            JSON_OBJECT(
+                'id', n.id,
+                'notes', n.notes,
+                'date', n.createdAt
+            )
+        ) AS notes_product 
         FROM products p
+        LEFT JOIN notes n
+        ON p.id = n.product_id
         LEFT JOIN brands b 
         ON p.brand_id = b.id
         LEFT JOIN categories c 
         ON p.category_id = c.id
+        GROUP BY 
+            p.id, 
+            p.name
         ORDER BY p.createdAt DESC
         LIMIT 4";
         $stmt = $this->_connexionBD->prepare($query);
@@ -56,8 +80,17 @@ use PDOException;
 
     public function findLatestProduct() 
     {
-        $query = "SELECT p.id, p.name, p.descriptionShort, p.descriptionLong, p.thumbnail, p.quantity, p.createdAt, p.price, b.name AS brandName, c.name AS categories 
+        $query = "SELECT p.id, p.name, p.descriptionShort, p.descriptionLong, p.thumbnail, p.quantity, p.createdAt, p.price, b.name AS brandName, c.name AS categories,
+        GROUP_CONCAT(
+            JSON_OBJECT(
+                'id', n.id,
+                'notes', n.notes,
+                'date', n.createdAt
+            )
+        ) AS notes_product 
         FROM products p
+        LEFT JOIN notes n
+        ON p.id = n.product_id
         LEFT JOIN brands b 
         ON p.brand_id = b.id
         LEFT JOIN categories c 
@@ -154,13 +187,24 @@ use PDOException;
     public function findById(int $id) 
     {
 
-        $query = "SELECT p.id, p.name, p.descriptionShort, p.descriptionLong, p.thumbnail, p.quantity, p.createdAt, p.price, b.name AS brandName, c.name AS categories 
+        $query = "SELECT p.id, p.name, p.descriptionShort, p.descriptionLong, p.thumbnail, p.quantity, p.createdAt, p.price, b.name AS brandName, c.name AS categories , GROUP_CONCAT(
+            JSON_OBJECT(
+                'id', n.id,
+                'notes', n.notes,
+                'date', n.createdAt
+            )
+        ) AS notes_product
         FROM products p
+        LEFT JOIN notes n
+        ON p.id = n.product_id
         LEFT JOIN brands b 
         ON p.brand_id = b.id
         LEFT JOIN categories c 
         ON p.category_id = c.id
-        WHERE p.id = :id";
+        WHERE p.id = :id
+        GROUP BY 
+            p.id, 
+            p.name";
         $stmt = $this->_connexionBD->prepare($query);
         $stmt->bindParam(":id", $id , PDO::PARAM_INT);
         $stmt->execute();
@@ -297,15 +341,28 @@ use PDOException;
     public function search(array $data)
     {
       
-        $queryConstruction = "";
-        $jointure = "";
         $where = "" ;
 
-        $sql = "SELECT p.id, p.name, p.descriptionShort, p.descriptionLong, p.thumbnail, p.quantity, p.createdAt, p.price";
-
+        $query = "SELECT p.id, p.name, p.descriptionShort, p.descriptionLong, p.thumbnail, p.quantity, p.createdAt, p.price, b.name AS brandName, c.name AS categories, GROUP_CONCAT(sc.name SEPARATOR ',') AS subCategoryNames, GROUP_CONCAT(
+            JSON_OBJECT(
+                'id', n.id,
+                'notes', n.notes,
+                'date', n.createdAt
+            )
+        ) AS notes_product 
+        FROM products p
+        LEFT JOIN brands b 
+            ON p.brand_id = b.id
+        LEFT JOIN categories c 
+            ON p.category_id = c.id
+        LEFT JOIN productID_subCategoriesID pcs 
+            ON p.id = pcs.Id_product
+        LEFT JOIN sub_categories sc 
+            ON pcs.Id_subCategory = sc.id
+        LEFT JOIN notes n
+            ON p.id = n.product_id";
+            
         if($data['brand_id']){
-            $sql .= ", b.name AS brandName";
-            $jointure .= " LEFT JOIN brands b ON p.brand_id = b.id";
 
             if( $where === "") {
                 $where .= " WHERE b.id = :brand_id";
@@ -315,8 +372,6 @@ use PDOException;
         };
 
         if($data['category_id']){
-            $sql .= ", c.name AS categories";
-            $jointure .= " LEFT JOIN categories c ON p.category_id = c.id";
 
             if( $where === ""){
                 $where .= " WHERE c.id = :category_id";
@@ -325,10 +380,7 @@ use PDOException;
             }
         };
 
-
         if($data['subCategory_Id']){
-            $sql .= ", GROUP_CONCAT(sc.name SEPARATOR ',') AS subCategoryNames";
-            $jointure .= " LEFT JOIN productID_subCategoriesID pcs ON p.id = pcs.Id_product LEFT JOIN sub_categories sc ON pcs.Id_subCategory = sc.id";
 
             if( $where === ""){
                 $where .= " WHERE sc.id = :subCategory_Id";
@@ -348,19 +400,9 @@ use PDOException;
         };
 
 
-        $queryConstruction = $sql . " FROM products p ";
+        $query .=  $where ." GROUP BY p.id, p.name";
 
-        if( $jointure !== ""){
-            $queryConstruction .= $jointure;
-        }
-
-        if( $where !== ""){
-            $queryConstruction .= $where;
-        }
-
-        $queryConstruction .= " GROUP BY p.id";
-
-        $stmt = $this->_connexionBD->prepare($queryConstruction);
+        $stmt = $this->_connexionBD->prepare($query);
         
         if($data['brand_id'] ) {
             $stmt->bindParam(":brand_id", $data['brand_id'], PDO::PARAM_INT);
